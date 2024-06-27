@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8">
+    <title>GUARDIÃO MÓVEL - PCPB</title>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css">
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #000000;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+        }
+        .login {
+            background-color: #1e1e1e;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 30px;
+        }
+        .input-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            background-color: #2c2c2c;
+            border-radius: 5px;
+            padding: 10px;
+        }
+        .input-group i {
+            margin-right: 15px;
+            color: #4CAF50;
+        }
+        input[type="text"], input[type="password"] {
+            background-color: transparent;
+            border: none;
+            color: #ffffff;
+            font-size: 16px;
+            width: 100%;
+            outline: none;
+            font-family: Arial, sans-serif;
+        }
+        input[type="submit"] {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        .modal-content {
+            background-color: #1e1e1e;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 300px;
+            text-align: center;
+            border-radius: 5px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #fff;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        body, html {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #000000;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        #background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        .login {
+            background-color: rgba(30, 30, 30, 0.8);
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+            text-align: center;
+            
+        }
+    </style>
+</head>
+<body>
+    <canvas id="background"></canvas>
+    <div class="login">
+        <div style="display: flex; align-items: center;">
+            <img src="http://localhost/logop.png" alt="Logo" style="width: 150px; height: 150px; margin-right: 20px;">
+            <img src="http://localhost/logo.png" alt="Logo" style="width: 150px; height: 150px;">
+        </div>
+        <h1>GUARDIÃO MÓVEL - PCPB</h1>
+        <form action="authenticate.php" method="post">
+            <div class="input-group">
+                <i class="fas fa-user"></i>
+                <input type="text" name="username" placeholder="Matrícula" required>
+            </div>
+            <div class="input-group">
+                <i class="fas fa-lock"></i>
+                <input type="password" name="password" placeholder="Senha" required>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <div style="text-align: left;">
+                    <label><input type="checkbox" name="remember_me" value="1" style="margin-bottom: 10px;"> Lembrar-me</label><br>
+                    <a href="#" onclick="document.getElementById('recoveryModal').style.display='block'" style="color: white; text-decoration: underline;">Esqueci minha senha</a>
+                </div>
+                <div>
+                    <input type="submit" value="Login">
+                </div>
+            </div>
+        </form>
+        <div id="recoveryModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <p>Esqueci minha senha</p>
+            </div>
+        </div>
+    </div>
+    <div id="errorModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p>Usuário e/ou senha incorretos!</p>
+        </div>
+    </div>
+    <script>
+        var modal = document.getElementById("errorModal");
+        var span = document.getElementsByClassName("close")[0];
+
+        // Verifica se há um parâmetro de erro na URL
+        var urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('error') == '1') {
+            modal.style.display = "block";
+        }
+
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+        const canvas = document.getElementById('background');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const particles = [];
+        const particleCount = 100;
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * 2;
+                this.vy = (Math.random() - 0.5) * 2;
+                this.radius = Math.random() * 2;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x < 0 || this.x > canvas.width) this.vx = -this.vx;
+                if (this.y < 0 || this.y > canvas.height) this.vy = -this.vy;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(76, 175, 80, 0.5)';
+                ctx.fill();
+            }
+        }
+
+        for (let i = 0; i < particleCount; i++) {
+            particles.push(new Particle());
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+        
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+        
+                    if (distance < 150) {  // Aumentado de 100 para 150
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.strokeStyle = `rgba(76, 175, 80, ${1 - distance / 150})`;  // Ajustado para a nova distância
+                        ctx.lineWidth = 1.5;  // Adicionado para aumentar a espessura da linha
+                        ctx.stroke();
+                    }
+                }
+            }
+        
+            requestAnimationFrame(animate);
+        }
+        
+        animate();
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>
